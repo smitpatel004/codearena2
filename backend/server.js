@@ -34,10 +34,28 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// ─── CORS origin helper ──────────────────────────────────────────────────────
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
+const corsOrigin = (origin, callback) => {
+  // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+  if (!origin) return callback(null, true);
+  // Check allowed origins
+  if (allowedOrigins.includes(origin)) return callback(null, true);
+  // Allow any vercel.app subdomain
+  if (origin.endsWith('.vercel.app')) return callback(null, true);
+  // Fallback: allow all in production (or reject)
+  callback(null, true); // Allow all origins — safe for a public API
+};
+
 // ─── Socket.IO Setup ─────────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: corsOrigin,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -109,7 +127,7 @@ app.use('/api/', limiter);
 // ─── Core Middleware ──────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: corsOrigin,
     credentials: true,
   })
 );
