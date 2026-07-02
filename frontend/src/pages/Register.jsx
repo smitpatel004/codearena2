@@ -16,32 +16,46 @@ export default function Register() {
     setLoading(true)
     try {
       await register(form.name, form.email, form.password)
-      toast.success('Account created! Welcome to CodeArena 🎉')
+      toast.success('Welcome to Codex Arena')
       navigate('/profile')
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-surface-900 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-stone-900 py-12 relative overflow-hidden">
       <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
+      <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] bg-gold-500/2 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none opacity-[0.15]" style={{
+        backgroundImage: 'radial-gradient(circle, rgba(180,150,100,0.05) 1px, transparent 1px)',
+        backgroundSize: '18px 18px',
+        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black 35%, transparent 70%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black 35%, transparent 70%)',
+      }} />
+
       <div className="relative w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold gradient-text">
-            <span className="text-2xl">⚔️</span> CodeArena
+          <Link to="/" className="inline-flex flex-col items-center gap-1">
+            <div className="w-12 h-12 rounded-md bg-gold-gradient flex items-center justify-center shadow-stone mb-2">
+              <span className="font-serif font-bold text-stone-900 text-sm">CA</span>
+            </div>
+            <span className="text-xl font-serif font-bold gradient-text tracking-wider">CODEX ARENA</span>
           </Link>
-          <h2 className="text-3xl font-bold text-white mt-4 mb-1">Create your account</h2>
-          <p className="text-gray-400">Join thousands of competitive programmers</p>
+          <h2 className="text-2xl font-serif font-bold text-stone-100 mt-6 mb-2 tracking-wide">Join the Arena</h2>
+          <p className="text-stone-400 font-medium">Forge your legend among warriors of code</p>
         </div>
 
-        <div className="glass p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="card-marble p-8 relative">
+          <span className="absolute top-3 left-3 w-1.5 h-1.5 bg-gold-500/15" />
+          <span className="absolute top-3 right-3 w-1.5 h-1.5 bg-gold-500/15" />
+          <span className="absolute bottom-3 left-3 w-1.5 h-1.5 bg-gold-500/15" />
+          <span className="absolute bottom-3 right-3 w-1.5 h-1.5 bg-gold-500/15" />
+
+          <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
             <div>
-              <label className="label">Full Name</label>
-              <input id="reg-name" type="text" className="input" placeholder="John Doe"
+              <label className="label">Warrior Name</label>
+              <input id="reg-name" type="text" className="input" placeholder="Enter your name"
                 value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
             </div>
             <div>
@@ -59,14 +73,22 @@ export default function Register() {
               <input id="reg-confirm" type="password" className="input" placeholder="Repeat password"
                 value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} required />
             </div>
-            <button id="reg-submit" type="submit" disabled={loading} className="btn-primary w-full py-3.5 mt-2">
-              {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account...</> : '🚀 Create Account'}
+            <button id="reg-submit" type="submit" disabled={loading} className="btn-primary w-full py-3.5 mt-3">
+              {loading ? (
+                <><span className="w-4 h-4 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin" />Forging legend...</>
+              ) : 'Enter the Arena'}
             </button>
           </form>
-          <div className="divider" />
-          <p className="text-center text-gray-400 text-sm">
-            Already have an account?{' '}
-            <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">Sign in</Link>
+
+          <div className="divider-ornament relative z-10">
+            <span className="text-[10px] text-stone-500 font-semibold tracking-[0.15em] uppercase px-2">or</span>
+          </div>
+
+          <p className="text-center text-stone-400 text-sm relative z-10">
+            Already a warrior?{' '}
+            <Link to="/login" className="text-gold-400 hover:text-gold-300 font-semibold transition-colors">
+              Return to battle
+            </Link>
           </p>
         </div>
       </div>

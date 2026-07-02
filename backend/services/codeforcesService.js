@@ -8,6 +8,11 @@ const axios = require('axios');
 const CF_API = 'https://codeforces.com/api';
 
 const getUserStats = async (username) => {
+  if (username && username.includes('codeforces.com')) {
+    const parts = username.split('/').filter(Boolean);
+    username = parts[parts.length - 1];
+  }
+
   try {
     const [userRes, ratingRes] = await Promise.allSettled([
       axios.get(`${CF_API}/user.info?handles=${username}`, { timeout: 10000 }),

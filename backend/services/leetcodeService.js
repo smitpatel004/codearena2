@@ -8,6 +8,12 @@ const axios = require('axios');
 const LEETCODE_API = 'https://leetcode.com/graphql';
 
 const getUserStats = async (username) => {
+  // Extract username if user accidentally pasted a full URL
+  if (username && username.includes('leetcode.com')) {
+    const parts = username.split('/').filter(Boolean);
+    username = parts[parts.length - 1];
+  }
+
   const query = `
     query getUserProfile($username: String!) {
       matchedUser(username: $username) {

@@ -11,12 +11,13 @@ import Analytics from './pages/Analytics'
 import Leaderboard from './pages/Leaderboard'
 import Friends from './pages/Friends'
 import Settings from './pages/Settings'
+import ChallengeArena from './pages/ChallengeArena'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-stone-900">
+      <div className="dot-loader"><span /><span /><span /></div>
     </div>
   )
   return user ? children : <Navigate to="/login" replace />
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/friends" element={<Friends />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/challenge/:id" element={<ChallengeArena />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

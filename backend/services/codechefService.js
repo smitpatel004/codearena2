@@ -6,6 +6,11 @@
 const axios = require('axios');
 
 const getUserStats = async (username) => {
+  if (username && username.includes('codechef.com')) {
+    const parts = username.split('/').filter(Boolean);
+    username = parts[parts.length - 1];
+  }
+
   try {
     // Try the unofficial CodeChef API first
     const { data } = await axios.get(

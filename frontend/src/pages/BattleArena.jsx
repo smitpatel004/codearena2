@@ -2,45 +2,63 @@ import { useState, useEffect } from 'react'
 import api from '../utils/api'
 import toast from 'react-hot-toast'
 
-const defaultPlayer = { displayName: '', leetcodeUsername: '', codeforcesUsername: '', codechefUsername: '' }
+const defaultPlayer = {
+  displayName: '',
+  leetcodeUsername: '',
+  codeforcesUsername: '',
+  codechefUsername: '',
+}
 
 const CompareBar = ({ label, v1, v2, max }) => {
   const p1 = max ? Math.min((v1 / max) * 100, 100) : 0
   const p2 = max ? Math.min((v2 / max) * 100, 100) : 0
   const winner = v1 > v2 ? 1 : v2 > v1 ? 2 : 0
   return (
-    <div className="py-3 border-b border-white/5 last:border-0">
+    <div className="py-3 border-b border-stone-700/20 last:border-0">
       <div className="flex justify-between text-sm mb-2">
-        <span className={`font-bold ${winner === 1 ? 'text-emerald-400' : 'text-white'}`}>{v1 ?? 0}</span>
-        <span className="text-gray-500 text-xs">{label}</span>
-        <span className={`font-bold ${winner === 2 ? 'text-emerald-400' : 'text-white'}`}>{v2 ?? 0}</span>
+        <span className={`font-bold tracking-wide ${winner === 1 ? 'text-gold-400' : 'text-stone-200'}`}>
+          {v1 ?? 0}
+        </span>
+        <span className="text-stone-500 text-xs font-semibold tracking-[0.08em] uppercase">{label}</span>
+        <span className={`font-bold tracking-wide ${winner === 2 ? 'text-gold-400' : 'text-stone-200'}`}>
+          {v2 ?? 0}
+        </span>
       </div>
-      <div className="flex gap-1 h-2">
-        <div className="flex-1 bg-surface-600 rounded-full overflow-hidden flex justify-end">
-          <div className="bg-gradient-to-l from-brand-500 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${p1}%` }} />
+      <div className="flex gap-1.5 h-2.5">
+        <div className="flex-1 bg-stone-700 rounded-sm overflow-hidden flex justify-end">
+          <div className="transition-all duration-700 rounded-sm"
+            style={{ width: `${p1}%`, background: 'linear-gradient(90deg, #8f7218, #d4b65a)' }} />
         </div>
-        <div className="flex-1 bg-surface-600 rounded-full overflow-hidden">
-          <div className="bg-gradient-to-r from-pink-500 to-orange-500 rounded-full transition-all duration-700" style={{ width: `${p2}%` }} />
+        <div className="flex-1 bg-stone-700 rounded-sm overflow-hidden">
+          <div className="transition-all duration-700 rounded-sm"
+            style={{ width: `${p2}%`, background: 'linear-gradient(90deg, #7e1e1e, #c06020)' }} />
         </div>
       </div>
     </div>
   )
 }
 
-const PlayerInput = ({ title, color, gradient, form, onChange }) => (
-  <div className={`glass p-6 border ${color}`}>
-    <h3 className={`font-bold text-lg mb-4 bg-clip-text text-transparent bg-gradient-to-r ${gradient}`}>{title}</h3>
+const PlayerInput = ({ title, colorClass, borderClass, form, onChange }) => (
+  <div className={`card-stone p-6 border ${borderClass} transition-all duration-300`}>
+    <div className="flex items-center gap-3 mb-5">
+      <h3 className={`font-serif font-bold text-lg tracking-wider ${colorClass}`}>{title}</h3>
+      <div className="flex-1 h-px bg-gradient-to-r from-current/15 to-transparent" />
+    </div>
     <div className="space-y-3">
       {[
-        { key: 'displayName', placeholder: 'Display name (optional)', icon: '👤' },
-        { key: 'leetcodeUsername', placeholder: 'LeetCode username', icon: '🟡' },
-        { key: 'codeforcesUsername', placeholder: 'Codeforces handle', icon: '🔵' },
-        { key: 'codechefUsername', placeholder: 'CodeChef username', icon: '🟠' },
+        { key: 'displayName', placeholder: 'Display name', label: 'Name' },
+        { key: 'leetcodeUsername', placeholder: 'LeetCode username', label: 'LeetCode' },
+        { key: 'codeforcesUsername', placeholder: 'Codeforces handle', label: 'Codeforces' },
+        { key: 'codechefUsername', placeholder: 'CodeChef username', label: 'CodeChef' },
       ].map(f => (
-        <div key={f.key} className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">{f.icon}</span>
-          <input className="input pl-9 text-sm" placeholder={f.placeholder}
-            value={form[f.key]} onChange={e => onChange({ ...form, [f.key]: e.target.value })} />
+        <div key={f.key}>
+          <span className="text-[10px] text-stone-500 tracking-[0.08em] uppercase font-semibold block mb-1">{f.label}</span>
+          <input
+            className="input text-sm"
+            placeholder={f.placeholder}
+            value={form[f.key]}
+            onChange={e => onChange({ ...form, [f.key]: e.target.value })}
+          />
         </div>
       ))}
     </div>
@@ -56,7 +74,6 @@ export default function BattleArena() {
 
   useEffect(() => {
     api.get('/battle/history').then(r => setHistory(r.data.data?.slice(0, 5) || [])).catch(() => {})
-    // Pre-fill P1 from user profile
     api.get('/profile').then(r => {
       const p = r.data.data
       setP1(prev => ({
@@ -79,14 +96,11 @@ export default function BattleArena() {
     try {
       const res = await api.post('/battle', { player1: p1, player2: p2 })
       setResult(res.data.data)
-      toast.success('Battle complete! ⚔️')
-      // Refresh history
+      toast.success('Battle complete')
       api.get('/battle/history').then(r => setHistory(r.data.data?.slice(0, 5) || [])).catch(() => {})
     } catch (err) {
       toast.error(err.response?.data?.message || 'Battle failed. Check usernames.')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   const lc1 = result?.player1?.stats?.leetcode
@@ -98,50 +112,59 @@ export default function BattleArena() {
 
   return (
     <div className="page max-w-5xl">
-      <h1 className="page-title">⚔️ Battle Arena</h1>
+      <h1 className="page-title">Battle Arena</h1>
       <p className="page-subtitle">Compare two coding profiles head-to-head</p>
 
       {/* Player inputs */}
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
-        <PlayerInput title="⚡ Player 1" color="border-brand-500/30" gradient="from-brand-400 to-violet-400" form={p1} onChange={setP1} />
-        <PlayerInput title="🔥 Player 2" color="border-pink-500/30" gradient="from-pink-400 to-orange-400" form={p2} onChange={setP2} />
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <PlayerInput title="Champion" colorClass="text-gold-400" borderClass="border-stone-600/30 hover:border-gold-500/25" form={p1} onChange={setP1} />
+        <PlayerInput title="Challenger" colorClass="text-crimson-400" borderClass="border-stone-600/30 hover:border-crimson-500/25" form={p2} onChange={setP2} />
       </div>
 
-      <div className="flex justify-center mb-10">
-        <button id="battle-start" onClick={handleBattle} disabled={loading}
-          className="btn-primary text-lg px-12 py-4 shadow-2xl shadow-brand-900/50">
-          {loading
-            ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Fetching stats...</>
-            : '⚔️ Start Battle!'}
-        </button>
+      {/* FIGHT button */}
+      <div className="flex justify-center mb-12">
+        <div className="relative">
+          <div className="absolute inset-0 rounded bg-gold-500/6 blur-xl animate-glow-pulse" />
+          <button id="battle-start" onClick={handleBattle} disabled={loading}
+            className="btn-primary text-xl px-16 py-5 shadow-glow-gold relative z-10 tracking-[0.15em] uppercase font-bold">
+            {loading ? (
+              <><span className="w-5 h-5 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin" />Fetching...</>
+            ) : (
+              'FIGHT'
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Battle Result */}
       {result && (
         <div className="animate-slide-up space-y-6">
-          {/* Winner banner */}
-          <div className={`glass p-6 text-center border ${result.winner === 'tie' ? 'border-yellow-500/40' : 'border-emerald-500/40'}`}>
-            <div className="text-5xl mb-3">{result.winner === 'tie' ? '🤝' : '🏆'}</div>
-            <h2 className="text-2xl font-black text-white mb-1">
-              {result.winner === 'tie' ? "It's a Tie!" : `${result.winner === 'player1' ? (p1.displayName || 'Player 1') : (p2.displayName || 'Player 2')} Wins!`}
+          <div className={`card-marble p-10 text-center ${result.winner === 'tie' ? 'border-amber-500/15 bg-amber-500/2' : 'border-emerald-500/15 bg-emerald-500/2'}`}>
+            <div className="text-6xl mb-5 font-serif">{result.winner === 'tie' ? '—' : '✦'}</div>
+            <h2 className="text-3xl font-serif font-bold text-stone-100 mb-2 tracking-wider">
+              {result.winner === 'tie'
+                ? 'A Worthy Tie'
+                : `${result.winner === 'player1' ? (p1.displayName || 'Champion') : (p2.displayName || 'Challenger')} Reigns Supreme`}
             </h2>
-            <div className="flex justify-center gap-8 mt-4">
+            <div className="flex justify-center items-center gap-12 mt-8">
               <div className="text-center">
-                <div className="text-3xl font-black gradient-text">{result.player1.score}</div>
-                <div className="text-xs text-gray-400">{p1.displayName || 'Player 1'}</div>
+                <div className="text-6xl font-bold gradient-text tracking-tight">{result.player1.score}</div>
+                <div className="text-sm text-stone-400 mt-2 font-bold tracking-[0.08em] uppercase">{p1.displayName || 'Champion'}</div>
               </div>
-              <div className="text-2xl text-gray-500 self-center">vs</div>
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-xl font-serif font-bold text-stone-600 tracking-[0.2em]">VS</span>
+                <div className="w-px h-8 bg-gradient-to-b from-transparent via-stone-600 to-transparent" />
+              </div>
               <div className="text-center">
-                <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-orange-400">{result.player2.score}</div>
-                <div className="text-xs text-gray-400">{p2.displayName || 'Player 2'}</div>
+                <div className="text-6xl font-bold gradient-text-warm tracking-tight">{result.player2.score}</div>
+                <div className="text-sm text-stone-400 mt-2 font-bold tracking-[0.08em] uppercase">{p2.displayName || 'Challenger'}</div>
               </div>
             </div>
           </div>
 
-          {/* Comparison sections */}
           {(lc1 || lc2) && (
-            <div className="glass p-6">
-              <h3 className="text-yellow-400 font-bold mb-4">🟡 LeetCode Comparison</h3>
+            <div className="card-sand p-6">
+              <h3 className="font-serif font-bold text-amber-400 mb-5 tracking-wider text-lg">LeetCode Comparison</h3>
               <CompareBar label="Total Solved" v1={lc1?.totalSolved} v2={lc2?.totalSolved} max={500} />
               <CompareBar label="Easy" v1={lc1?.easySolved} v2={lc2?.easySolved} max={200} />
               <CompareBar label="Medium" v1={lc1?.mediumSolved} v2={lc2?.mediumSolved} max={200} />
@@ -150,15 +173,15 @@ export default function BattleArena() {
             </div>
           )}
           {(cf1 || cf2) && (
-            <div className="glass p-6">
-              <h3 className="text-blue-400 font-bold mb-4">🔵 Codeforces Comparison</h3>
+            <div className="card-sand p-6">
+              <h3 className="font-serif font-bold text-blue-400 mb-5 tracking-wider text-lg">Codeforces Comparison</h3>
               <CompareBar label="Current Rating" v1={cf1?.currentRating} v2={cf2?.currentRating} max={3000} />
               <CompareBar label="Max Rating" v1={cf1?.maxRating} v2={cf2?.maxRating} max={3000} />
             </div>
           )}
           {(cc1 || cc2) && (
-            <div className="glass p-6">
-              <h3 className="text-orange-400 font-bold mb-4">🟠 CodeChef Comparison</h3>
+            <div className="card-sand p-6">
+              <h3 className="font-serif font-bold text-orange-400 mb-5 tracking-wider text-lg">CodeChef Comparison</h3>
               <CompareBar label="Current Rating" v1={cc1?.currentRating} v2={cc2?.currentRating} max={2500} />
               <CompareBar label="Highest Rating" v1={cc1?.highestRating} v2={cc2?.highestRating} max={2500} />
             </div>
@@ -168,22 +191,27 @@ export default function BattleArena() {
 
       {/* Recent battles */}
       {history.length > 0 && (
-        <div className="mt-10">
-          <h2 className="section-title">Recent Battles</h2>
+        <div className="mt-12">
+          <div className="flex items-center gap-3 mb-5">
+            <h2 className="section-title mb-0">Recent Battles</h2>
+            <div className="flex-1 h-px bg-gradient-to-r from-stone-600/40 to-transparent" />
+          </div>
           <div className="space-y-3">
             {history.map((b, i) => (
-              <div key={i} className="glass p-4 flex items-center justify-between">
+              <div key={i} className="card-stone p-4 flex items-center justify-between hover:bg-stone-800/80 transition-all">
                 <div className="flex items-center gap-3">
-                  <span>{b.winner === 'tie' ? '🤝' : '🏆'}</span>
+                  <span className="font-serif text-gold-400/60">{b.winner === 'tie' ? '—' : '✦'}</span>
                   <div>
-                    <span className="font-medium text-sm">{b.player1?.username || 'P1'}</span>
-                    <span className="text-gray-500 mx-2 text-xs">vs</span>
-                    <span className="font-medium text-sm">{b.player2?.username || 'P2'}</span>
+                    <span className="font-semibold text-sm text-stone-100 tracking-wide">{b.player1?.username || 'P1'}</span>
+                    <span className="text-stone-600 mx-2 text-xs font-bold">vs</span>
+                    <span className="font-semibold text-sm text-stone-100 tracking-wide">{b.player2?.username || 'P2'}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-brand-400">{b.score1} — {b.score2}</div>
-                  <div className="text-xs text-gray-500">{new Date(b.createdAt).toLocaleDateString()}</div>
+                  <div className="text-sm font-bold gradient-text">{b.score1} — {b.score2}</div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 font-medium tracking-wide uppercase">
+                    {new Date(b.createdAt).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
             ))}

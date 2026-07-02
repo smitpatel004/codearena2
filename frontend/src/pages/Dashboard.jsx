@@ -1,45 +1,68 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../utils/api'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 
-const StatCard = ({ icon, label, value, sub, color = 'brand' }) => {
-  const colors = {
-    brand: 'from-brand-500/20 to-violet-500/20 border-brand-500/30',
-    yellow: 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30',
-    blue: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30',
-    green: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30',
+function CountUp({ end, duration = 800 }) {
+  const [val, setVal] = useState(0)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (end == null || isNaN(end)) { setVal(end); return }
+    let start = 0
+    const step = (timestamp) => {
+      if (!start) start = timestamp
+      const progress = Math.min((timestamp - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setVal(Math.floor(eased * end))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [end, duration])
+  return <span>{val != null && !isNaN(val) ? val.toLocaleString() : end}</span>
+}
+
+const StatCard = ({ sym, label, value, sub, tone = 'gold' }) => {
+  const borders = {
+    gold: 'border-gold-500/15 hover:border-gold-500/30',
+    amber: 'border-amber-500/12 hover:border-amber-500/25',
+    blue: 'border-blue-500/12 hover:border-blue-500/25',
+    emerald: 'border-emerald-500/12 hover:border-emerald-500/25',
   }
   return (
-    <div className={`glass bg-gradient-to-br ${colors[color]} p-6 hover:-translate-y-1 transition-all duration-300`}>
+    <div className={`card-stone p-5 border ${borders[tone]} group`}>
       <div className="flex items-start justify-between mb-3">
-        <span className="text-2xl">{icon}</span>
-        {sub && <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded-lg">{sub}</span>}
+        <span className="text-gold-400/50 font-serif text-lg group-hover:text-gold-400 transition-colors">{sym}</span>
+        {sub && (
+          <span className="badge badge-gold">{sub}</span>
+        )}
       </div>
-      <div className="text-3xl font-black text-white mb-1">{value ?? '—'}</div>
-      <div className="text-sm text-gray-400">{label}</div>
+      <div className="text-3xl font-bold text-stone-100 mb-1 tracking-tight">
+        {typeof value === 'number' ? <CountUp end={value} /> : (value ?? '—')}
+      </div>
+      <div className="text-[10px] text-stone-500 tracking-[0.1em] uppercase font-semibold">{label}</div>
     </div>
   )
 }
 
-const PlatformSection = ({ title, emoji, color, children, connected }) => (
-  <div className="glass p-6">
+const PlatformSection = ({ title, color, children, connected }) => (
+  <div className="card-column p-6 border-l-2 border-l-transparent hover:border-l-gold-500/30 transition-all duration-300">
     <div className="flex items-center gap-3 mb-5">
-      <span className="text-2xl">{emoji}</span>
-      <h3 className={`text-lg font-bold ${color}`}>{title}</h3>
-      {connected
-        ? <span className="badge-green ml-auto">Connected</span>
-        : <span className="badge bg-gray-500/20 text-gray-400 border border-gray-500/30 ml-auto">Not Connected</span>}
+      <h3 className={`font-serif font-bold text-lg tracking-wide ${color}`}>{title}</h3>
+      {connected ? (
+        <span className="badge badge-gold ml-auto">Connected</span>
+      ) : (
+        <span className="badge text-stone-400 border-stone-500/30 bg-stone-700/40 ml-auto">Not Connected</span>
+      )}
     </div>
     {children}
   </div>
 )
 
 const Row = ({ label, value }) => (
-  <div className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-    <span className="text-sm text-gray-400">{label}</span>
-    <span className="text-sm font-semibold text-white">{value ?? '—'}</span>
+  <div className="flex justify-between items-center py-2.5 border-b border-stone-700/20 last:border-0">
+    <span className="text-sm text-stone-400 font-medium">{label}</span>
+    <span className="text-sm font-semibold text-stone-200">{value ?? '—'}</span>
   </div>
 )
 
@@ -73,7 +96,7 @@ export default function Dashboard() {
     try {
       const res = await api.get('/dashboard')
       setData(res.data.data)
-      toast.success('Stats refreshed!')
+      toast.success('Stats refreshed')
     } catch (e) {
       toast.error(e.response?.data?.message || 'Refresh failed')
     } finally {
@@ -81,62 +104,75 @@ export default function Dashboard() {
     }
   }
 
-  const noProfile = !profile?.leetcodeUsername && !profile?.codeforcesUsername && !profile?.codechefUsername
+  const noProfile =
+    !profile?.leetcodeUsername && !profile?.codeforcesUsername && !profile?.codechefUsername
 
   return (
     <div className="page">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
         <div>
-          <h1 className="page-title">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
-          <p className="text-gray-400">Here's your coding performance overview</p>
+          <h1 className="page-title">
+            Welcome, {user?.name?.split(' ')[0]}
+          </h1>
+          <p className="text-stone-400 text-sm tracking-wide font-medium mt-1">
+            Your coding performance at a glance
+          </p>
         </div>
         <div className="flex gap-3">
-          <button onClick={refresh} disabled={loading} className="btn-secondary gap-2">
-            <span className={loading ? 'animate-spin' : ''}>🔄</span> Refresh Stats
+          <button onClick={refresh} disabled={loading} className="btn-secondary gap-2 text-sm">
+            <span className={loading ? 'animate-spin' : ''}>⟳</span> Refresh
           </button>
-          <Link to="/battle" className="btn-primary">⚔️ Battle</Link>
+          <Link to="/battle" className="btn-primary text-sm">
+            Battle
+          </Link>
         </div>
       </div>
 
       {/* No profile warning */}
       {noProfile && (
-        <div className="glass border border-yellow-500/30 bg-yellow-500/5 p-5 rounded-2xl mb-8 flex items-center gap-4">
-          <span className="text-3xl">⚠️</span>
-          <div>
-            <p className="font-semibold text-yellow-300">No platforms connected</p>
-            <p className="text-sm text-gray-400">Connect your LeetCode, Codeforces, or CodeChef username to see your stats.</p>
+        <div className="card-stone border-amber-500/15 bg-amber-500/2 p-5 mb-10 flex items-center gap-4">
+          <span className="text-2xl font-serif text-amber-400">!</span>
+          <div className="flex-1">
+            <p className="font-bold text-amber-400 tracking-wide">No platforms connected</p>
+            <p className="text-sm text-amber-400/50 font-medium mt-0.5">
+              Connect LeetCode, Codeforces, or CodeChef to see your stats.
+            </p>
           </div>
-          <Link to="/profile" className="btn-primary ml-auto whitespace-nowrap text-sm">Connect Now</Link>
+          <Link to="/profile" className="btn-primary text-sm whitespace-nowrap">
+            Connect Now
+          </Link>
         </div>
       )}
 
-      {/* Overview cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon="⭐" label="Skill Score" value={loading ? '...' : (data?.skillScore ?? 0)} sub="/100" color="brand" />
-        <StatCard icon="💡" label="Total Solved" value={loading ? '...' : (data?.leetcode?.totalSolved ?? 0)} sub="LeetCode" color="yellow" />
-        <StatCard icon="🔵" label="CF Rating" value={loading ? '...' : (data?.codeforces?.currentRating ?? 0)} sub="Codeforces" color="blue" />
-        <StatCard icon="🟠" label="CC Rating" value={loading ? '...' : (data?.codechef?.currentRating ?? 0)} sub="CodeChef" color="green" />
+      {/* Overview stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <StatCard sym="◆" label="Skill Score" value={loading ? null : (data?.skillScore ?? 0)} sub="/100" tone="gold" />
+        <StatCard sym="◇" label="Total Solved" value={loading ? null : (data?.leetcode?.totalSolved ?? 0)} sub="LeetCode" tone="amber" />
+        <StatCard sym="◈" label="CF Rating" value={loading ? null : (data?.codeforces?.currentRating ?? 0)} sub="Codeforces" tone="blue" />
+        <StatCard sym="▣" label="CC Rating" value={loading ? null : (data?.codechef?.currentRating ?? 0)} sub="CodeChef" tone="emerald" />
       </div>
 
       {/* Platform details */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* LeetCode */}
-        <PlatformSection title="LeetCode" emoji="🟡" color="text-yellow-400" connected={!!profile?.leetcodeUsername}>
+      <div className="grid lg:grid-cols-3 gap-5 mb-10">
+        <PlatformSection title="LeetCode" color="text-amber-400" connected={!!profile?.leetcodeUsername}>
           {data?.leetcode ? (
             <>
               <Row label="Total Solved" value={data.leetcode.totalSolved} />
-              <Row label="Easy" value={<span className="text-emerald-400">{data.leetcode.easySolved}</span>} />
-              <Row label="Medium" value={<span className="text-yellow-400">{data.leetcode.mediumSolved}</span>} />
-              <Row label="Hard" value={<span className="text-red-400">{data.leetcode.hardSolved}</span>} />
+              <Row label="Easy" value={<span className="text-emerald-400 font-semibold">{data.leetcode.easySolved}</span>} />
+              <Row label="Medium" value={<span className="text-amber-400 font-semibold">{data.leetcode.mediumSolved}</span>} />
+              <Row label="Hard" value={<span className="text-red-400 font-semibold">{data.leetcode.hardSolved}</span>} />
               <Row label="Contest Rating" value={data.leetcode.contestRating || 'N/A'} />
               <Row label="Global Rank" value={data.leetcode.ranking ? `#${data.leetcode.ranking.toLocaleString()}` : 'N/A'} />
             </>
-          ) : <p className="text-gray-500 text-sm py-2">{profile?.leetcodeUsername ? 'Loading...' : 'Add username in Profile'}</p>}
+          ) : (
+            <p className="text-stone-600 text-sm py-3 font-medium">
+              {profile?.leetcodeUsername ? 'Loading...' : 'Add username in Profile'}
+            </p>
+          )}
         </PlatformSection>
 
-        {/* Codeforces */}
-        <PlatformSection title="Codeforces" emoji="🔵" color="text-blue-400" connected={!!profile?.codeforcesUsername}>
+        <PlatformSection title="Codeforces" color="text-blue-400" connected={!!profile?.codeforcesUsername}>
           {data?.codeforces ? (
             <>
               <Row label="Current Rating" value={data.codeforces.currentRating} />
@@ -144,11 +180,14 @@ export default function Dashboard() {
               <Row label="Rank" value={<span className="capitalize">{data.codeforces.rank}</span>} />
               <Row label="Max Rank" value={<span className="capitalize">{data.codeforces.maxRank}</span>} />
             </>
-          ) : <p className="text-gray-500 text-sm py-2">{profile?.codeforcesUsername ? 'Loading...' : 'Add username in Profile'}</p>}
+          ) : (
+            <p className="text-stone-600 text-sm py-3 font-medium">
+              {profile?.codeforcesUsername ? 'Loading...' : 'Add username in Profile'}
+            </p>
+          )}
         </PlatformSection>
 
-        {/* CodeChef */}
-        <PlatformSection title="CodeChef" emoji="🟠" color="text-orange-400" connected={!!profile?.codechefUsername}>
+        <PlatformSection title="CodeChef" color="text-orange-400" connected={!!profile?.codechefUsername}>
           {data?.codechef ? (
             <>
               <Row label="Current Rating" value={data.codechef.currentRating} />
@@ -156,22 +195,34 @@ export default function Dashboard() {
               <Row label="Stars" value={data.codechef.stars} />
               <Row label="Global Rank" value={data.codechef.globalRank ? `#${data.codechef.globalRank}` : 'N/A'} />
             </>
-          ) : <p className="text-gray-500 text-sm py-2">{profile?.codechefUsername ? 'Loading...' : 'Add username in Profile'}</p>}
+          ) : (
+            <p className="text-stone-600 text-sm py-3 font-medium">
+              {profile?.codechefUsername ? 'Loading...' : 'Add username in Profile'}
+            </p>
+          )}
         </PlatformSection>
       </div>
 
       {/* Quick actions */}
       <div className="mt-8 grid sm:grid-cols-3 gap-4">
         {[
-          { icon: '📊', title: 'View Analytics', desc: 'Charts & insights', to: '/analytics', color: 'hover:border-violet-500/40' },
-          { icon: '🏆', title: 'Leaderboard', desc: 'See top coders', to: '/leaderboard', color: 'hover:border-yellow-500/40' },
-          { icon: '🤖', title: 'AI Analysis', desc: 'Get improvement tips', to: '/analytics', color: 'hover:border-emerald-500/40' },
+          { sym: '◈', title: 'View Analytics', desc: 'Charts and insights', to: '/analytics' },
+          { sym: '✦', title: 'Leaderboard', desc: 'See the top ranks', to: '/leaderboard' },
+          { sym: '❦', title: 'AI Analysis', desc: 'Get improvement strategy', to: '/analytics' },
         ].map(a => (
-          <Link key={a.title} to={a.to} className={`glass p-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 ${a.color}`}>
-            <span className="text-2xl">{a.icon}</span>
+          <Link
+            key={a.title}
+            to={a.to}
+            className="card-stone p-5 flex items-center gap-4 group"
+          >
+            <span className="text-gold-400/50 font-serif text-xl group-hover:text-gold-400 transition-colors">
+              {a.sym}
+            </span>
             <div>
-              <p className="font-semibold text-white">{a.title}</p>
-              <p className="text-xs text-gray-500">{a.desc}</p>
+              <p className="font-semibold text-stone-100 group-hover:text-gold-300 transition-colors tracking-wide">
+                {a.title}
+              </p>
+              <p className="text-xs text-stone-400 font-medium">{a.desc}</p>
             </div>
           </Link>
         ))}
