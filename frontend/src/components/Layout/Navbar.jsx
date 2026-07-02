@@ -8,7 +8,7 @@ const titles = {
   '/dashboard':   { title: 'Dashboard',   sub: 'Your coding stats at a glance' },
   '/battle':      { title: 'Battle Arena', sub: 'Challenge and compare profiles' },
   '/analytics':   { title: 'Analytics',   sub: 'Deep-dive into your performance' },
-  '/leaderboard': { title: 'Leaderboard', sub: 'Top warriors of Codex Arena' },
+  '/leaderboard': { title: 'Leaderboard', sub: 'Top warriors of CodeArena' },
   '/friends':     { title: 'War Council', sub: 'Your network of allies' },
   '/profile':     { title: 'Profile',     sub: 'Manage connected platforms' },
   '/settings':    { title: 'Settings',    sub: 'Account preferences' },
@@ -20,9 +20,16 @@ export default function Navbar({ onMenuClick }) {
   const { pendingChallenges, activeChallenges, dismissChallenge } = useSocket()
   const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
-  const info = titles[location.pathname] || { title: 'Codex Arena', sub: '' }
+  const info = titles[location.pathname] || { title: 'CodeArena', sub: '' }
 
-  const totalNotifications = pendingChallenges.length + activeChallenges.length;
+  // Hide active-challenge notification for the challenge currently being viewed
+  const currentChallengeId = location.pathname.startsWith('/challenge/')
+    ? location.pathname.split('/')[2]
+    : null;
+  const filteredActive = currentChallengeId
+    ? activeChallenges.filter(c => c.challengeId !== currentChallengeId)
+    : activeChallenges;
+  const totalNotifications = pendingChallenges.length + filteredActive.length;
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-stone-900/85 backdrop-blur-xl border-b border-stone-700/30">
@@ -80,7 +87,7 @@ export default function Navbar({ onMenuClick }) {
                         challenge={c}
                         onDismiss={(id) => {
                           dismissChallenge(id);
-                          if (pendingChallenges.length <= 1 && activeChallenges.length === 0) {
+                          if (pendingChallenges.length <= 1 && filteredActive.length === 0) {
                             setShowNotifications(false);
                           }
                         }}
@@ -90,12 +97,12 @@ export default function Navbar({ onMenuClick }) {
                 )}
 
                 {/* Active battles (sent challenges that are now live) */}
-                {activeChallenges.length > 0 && (
+                {filteredActive.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-[10px] text-stone-500 tracking-[0.15em] uppercase font-bold px-1">
                       Active Battles
                     </p>
-                    {activeChallenges.map((c) => {
+                    {filteredActive.map((c) => {
                       const isChallenger = c.challenger.id === user?._id;
                       const otherName = isChallenger ? c.opponent.name : c.challenger.name;
                       return (
@@ -130,7 +137,7 @@ export default function Navbar({ onMenuClick }) {
                 )}
 
                 {/* Empty state */}
-                {pendingChallenges.length === 0 && activeChallenges.length === 0 && (
+                {pendingChallenges.length === 0 && filteredActive.length === 0 && (
                   <div className="card-stone p-6 text-center">
                     <p className="text-stone-500 text-sm font-medium">No challenges</p>
                     <p className="text-stone-600 text-xs mt-1 font-medium">

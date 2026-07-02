@@ -114,6 +114,7 @@ const acceptChallenge = async (req, res, next) => {
 
     const io = req.app.get('io');
     if (io) {
+      // Notify challenger that opponent accepted
       io.to(`user:${challenge.challengerId._id}`).emit('challenge:accepted', {
         challengeId: challenge._id,
         opponent: { id: req.user._id.toString(), name: req.user.name },
@@ -124,6 +125,10 @@ const acceptChallenge = async (req, res, next) => {
         },
         endsAt: challenge.endsAt,
       });
+
+      // Emit updated challenge to both users so arena updates in real-time
+      io.to(`user:${challenge.challengerId._id}`).emit('challenge:updated', { challenge });
+      io.to(`user:${req.user._id}`).emit('challenge:updated', { challenge });
     }
 
     return successResponse(res, 'Challenge accepted — battle begins!', challenge);
@@ -201,7 +206,7 @@ const cancelChallenge = async (req, res, next) => {
 const submitSolution = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { leetcodeSubmissionUrl } = req.body;
+    const { leetcodeSubmissionUrl, solutionCode } = req.body;
 
     if (!leetcodeSubmissionUrl) {
       return errorResponse(res, 'leetcodeSubmissionUrl is required', 400);
@@ -245,6 +250,7 @@ const submitSolution = async (req, res, next) => {
     challenge[submissionField] = {
       submittedAt: now,
       leetcodeSubmissionUrl: leetcodeSubmissionUrl.trim(),
+      solutionCode: solutionCode ? solutionCode.trim() : '',
       verified: false,
     };
 

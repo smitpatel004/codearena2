@@ -43,11 +43,13 @@ const challengeSchema = new mongoose.Schema(
     challengerSubmission: {
       submittedAt: Date,
       leetcodeSubmissionUrl: String,
+      solutionCode: String,
       verified: { type: Boolean, default: false },
     },
     opponentSubmission: {
       submittedAt: Date,
       leetcodeSubmissionUrl: String,
+      solutionCode: String,
       verified: { type: Boolean, default: false },
     },
     // Result

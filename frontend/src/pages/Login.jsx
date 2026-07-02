@@ -38,7 +38,7 @@ export default function Login() {
             <div className="w-12 h-12 rounded-md bg-gold-gradient flex items-center justify-center shadow-stone mb-2">
               <span className="font-serif font-bold text-stone-900 text-sm">CA</span>
             </div>
-            <span className="text-xl font-serif font-bold gradient-text tracking-wider">CODEX ARENA</span>
+            <span className="text-xl font-serif font-bold gradient-text tracking-wider">CODEARENA</span>
           </Link>
           <h2 className="text-2xl font-serif font-bold text-stone-100 mt-6 mb-2 tracking-wide">Welcome back</h2>
           <p className="text-stone-400 font-medium">Enter the arena once more</p>
@@ -61,7 +61,7 @@ export default function Login() {
               <input id="login-password" type="password" className="input" placeholder="········"
                 value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
             </div>
-            <button id="login-submit" type="submit" disabled={loading} className="btn-primary w-full py-3.5 mt-3">
+            <button id="login-submit" type="submit" disabled={loading} className="btn-primary w-full py-3 mt-3 text-sm">
               {loading ? (
                 <><span className="w-4 h-4 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin" />Entering...</>
               ) : 'Enter Arena'}

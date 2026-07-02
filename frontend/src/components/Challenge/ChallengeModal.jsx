@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 
@@ -6,17 +7,20 @@ export default function ChallengeModal({ friend, onClose }) {
   const [difficulty, setDifficulty] = useState('Medium');
   const [timeLimit, setTimeLimit] = useState(20);
   const [sending, setSending] = useState(false);
+  const navigate = useNavigate();
 
   const handleSend = async () => {
     setSending(true);
     try {
-      await api.post('/challenges', {
+      const res = await api.post('/challenges', {
         opponentId: friend.userId || friend._id,
         difficulty,
         timeLimit,
       });
       toast.success(`Challenge sent to ${friend.name}!`);
       onClose();
+      // Navigate challenger to arena immediately — wait for opponent in real-time
+      navigate(`/challenge/${res.data.data._id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send challenge');
     } finally {

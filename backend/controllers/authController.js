@@ -31,6 +31,7 @@ const register = async (req, res, next) => {
     return successResponse(res, 'Account created successfully', {
       token,
       user: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -66,6 +67,7 @@ const login = async (req, res, next) => {
     return successResponse(res, 'Login successful', {
       token,
       user: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -87,6 +89,7 @@ const getMe = async (req, res, next) => {
 
     return successResponse(res, 'User fetched successfully', {
       user: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -111,6 +114,7 @@ const updateAccount = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     return successResponse(res, 'Account updated', {
+      _id: user._id,
       id: user._id,
       name: user.name,
       email: user.email,

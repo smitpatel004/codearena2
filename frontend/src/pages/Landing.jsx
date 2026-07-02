@@ -28,7 +28,7 @@ export default function Landing() {
             <span className="font-serif font-bold text-sm">CA</span>
           </div>
           <div>
-            <span className="text-lg font-serif font-bold gradient-text tracking-wider">CODEX&nbsp;ARENA</span>
+            <span className="text-lg font-serif font-bold gradient-text tracking-wider">CODEARENA</span>
             <span className="text-[9px] text-stone-500 block leading-none tracking-[0.2em] uppercase">Competitive Colosseum</span>
           </div>
         </div>
@@ -74,11 +74,11 @@ export default function Landing() {
             Connect your coding profiles. Battle opponents head-to-head.
             Analyze your strengths. Rise through the ranks with AI-powered strategy.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button onClick={() => navigate('/register')} className="btn-primary text-base px-12 py-4 text-lg">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button onClick={() => navigate('/register')} className="btn-primary px-8 py-3 text-sm">
               Enter the Arena
             </button>
-            <button onClick={() => navigate('/login')} className="btn-secondary text-base px-12 py-4 text-lg">
+            <button onClick={() => navigate('/login')} className="btn-secondary px-8 py-3 text-sm">
               Sign In
             </button>
           </div>
@@ -188,10 +188,10 @@ export default function Landing() {
               <span className="gradient-text">battle?</span>
             </h2>
             <p className="text-stone-400 text-lg mb-12 font-[450] leading-relaxed">
-              Join Codex Arena and begin your journey through the ranks
+              Join CodeArena and begin your journey through the ranks
               of competitive programming.
             </p>
-            <Link to="/register" className="btn-primary text-lg px-14 py-5 inline-flex shadow-glow-gold">
+            <Link to="/register" className="btn-primary px-10 py-3 text-sm inline-flex shadow-glow-gold">
               Enter the Arena — Free
             </Link>
           </div>
@@ -206,7 +206,7 @@ export default function Landing() {
           backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(180,150,100,0.02) 2px, rgba(180,150,100,0.02) 4px)',
         }} />
         <p className="text-stone-600 text-xs tracking-[0.12em] uppercase font-semibold relative z-10">
-          Codex Arena — Forged for warriors of the code
+          CodeArena — Forged for warriors of the code
         </p>
       </footer>
     </div>

@@ -46,7 +46,7 @@ export default function Sidebar({ open, onClose }) {
           </div>
           <div className="min-w-0">
             <span className="text-base font-serif font-bold gradient-text tracking-wider block truncate">
-              CODEX ARENA
+              CODEARENA
             </span>
             <span className="text-[9px] text-stone-500 tracking-[0.15em] uppercase font-semibold">
               Colosseum

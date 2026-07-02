@@ -14,14 +14,15 @@ const textColor = '#b0a088'
 const gridColor = 'rgba(184,150,44,0.06)'
 
 const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
   plugins: {
-    legend: { labels: { color: textColor, font: { family: 'Inter', size: 11 }, padding: 16 } },
+    legend: { labels: { color: textColor, font: { family: 'Inter', size: 10 }, padding: 10, boxWidth: 10 } },
   },
 }
 
 const pieOptions = {
   ...chartDefaults,
-  maintainAspectRatio: true,
   plugins: {
     ...chartDefaults.plugins,
     tooltip: { backgroundColor: '#2a241c', titleColor: '#f0d78c', bodyColor: '#d4c8b0', borderColor: 'rgba(184,150,44,0.2)', borderWidth: 1 },
@@ -33,8 +34,8 @@ const radarOptions = {
   scales: {
     r: {
       angleLines: { color: gridColor }, grid: { color: gridColor },
-      pointLabels: { color: textColor, font: { size: 11 } },
-      ticks: { color: '#887860', backdropColor: 'transparent', stepSize: 20 },
+      pointLabels: { color: textColor, font: { size: 10 } },
+      ticks: { color: '#887860', backdropColor: 'transparent', stepSize: 20, font: { size: 9 } },
       suggestedMin: 0, suggestedMax: 100,
     },
   },
@@ -120,23 +121,23 @@ export default function Analytics() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-5 mb-10">
-        <div className="card-sand p-6">
-          <h3 className="font-serif font-bold text-stone-100 mb-4 tracking-wide text-lg">Difficulty Distribution</h3>
-          <div className="flex justify-center" style={{ height: '250px' }}>
-            {pieChartData && pieChartData.datasets[0].data.some(v => v > 0) ? <Pie data={pieChartData} options={pieOptions} /> : <div className="flex items-center text-stone-500 text-sm font-medium">No data yet</div>}
+      <div className="grid md:grid-cols-2 gap-4 mb-10">
+        <div className="card-sand p-5">
+          <h3 className="font-serif font-bold text-stone-100 mb-3 tracking-wide">Difficulty Distribution</h3>
+          <div className="flex justify-center" style={{ height: '200px' }}>
+            {pieChartData && pieChartData.datasets[0].data.some(v => v > 0) ? <Pie data={pieChartData} options={pieOptions} /> : <div className="flex items-center text-stone-500 text-xs font-medium">No data yet</div>}
           </div>
         </div>
-        <div className="card-sand p-6">
-          <h3 className="font-serif font-bold text-stone-100 mb-4 tracking-wide text-lg">Platform Contribution</h3>
-          <div className="flex justify-center" style={{ height: '250px' }}>
-            {doughnutData && doughnutData.datasets[0].data.some(v => v > 0) ? <Doughnut data={doughnutData} options={pieOptions} /> : <div className="flex items-center text-stone-500 text-sm font-medium">No data yet</div>}
+        <div className="card-sand p-5">
+          <h3 className="font-serif font-bold text-stone-100 mb-3 tracking-wide">Platform Contribution</h3>
+          <div className="flex justify-center" style={{ height: '200px' }}>
+            {doughnutData && doughnutData.datasets[0].data.some(v => v > 0) ? <Doughnut data={doughnutData} options={pieOptions} /> : <div className="flex items-center text-stone-500 text-xs font-medium">No data yet</div>}
           </div>
         </div>
-        <div className="card-sand p-6 md:col-span-2 lg:col-span-1">
-          <h3 className="font-serif font-bold text-stone-100 mb-4 tracking-wide text-lg">Skill Breakdown</h3>
-          <div className="flex justify-center" style={{ height: '280px' }}>
-            {radarData ? <Radar data={radarData} options={radarOptions} /> : <div className="flex items-center text-stone-500 text-sm font-medium">No data</div>}
+        <div className="card-sand p-5 md:col-span-2 lg:col-span-1">
+          <h3 className="font-serif font-bold text-stone-100 mb-3 tracking-wide">Skill Breakdown</h3>
+          <div className="flex justify-center" style={{ height: '230px' }}>
+            {radarData ? <Radar data={radarData} options={radarOptions} /> : <div className="flex items-center text-stone-500 text-xs font-medium">No data</div>}
           </div>
         </div>
       </div>

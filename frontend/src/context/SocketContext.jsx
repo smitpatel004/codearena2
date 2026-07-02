@@ -50,10 +50,13 @@ export function SocketProvider({ children }) {
     const handleAccepted = (data) => {
       // My challenge was accepted — navigate me to the arena!
       toast.success(`${data.opponent.name} accepted! Entering arena...`, { duration: 3000 });
-      // Redirect challenger to the challenge page
-      setTimeout(() => {
-        window.location.href = `/challenge/${data.challengeId}`;
-      }, 800);
+      // Only redirect if not already on the challenge page
+      const targetPath = `/challenge/${data.challengeId}`;
+      if (window.location.pathname !== targetPath) {
+        setTimeout(() => {
+          window.location.href = targetPath;
+        }, 800);
+      }
       // Refresh active challenges
       fetchActiveChallenges();
     };

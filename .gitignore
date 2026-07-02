@@ -4,4 +4,4 @@ backend/node_modules/
 
 .env
 *.env
-backend/.env
+backend/.envfrontend/dist/

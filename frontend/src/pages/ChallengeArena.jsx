@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -45,6 +45,7 @@ export default function ChallengeArena() {
   const [submitting, setSubmitting] = useState(false);
   const [givingUp, setGivingUp] = useState(false);
   const [submissionUrl, setSubmissionUrl] = useState('');
+  const [solutionCode, setSolutionCode] = useState('');
   const [showSubmit, setShowSubmit] = useState(false);
   const [showGiveUp, setShowGiveUp] = useState(false);
 
@@ -75,16 +76,39 @@ export default function ChallengeArena() {
     return () => socket.off('challenge:updated', handleUpdated);
   }, [socket, id]);
 
+  // ── One-time opponent entered notification ──
+  const opponentNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (!challenge || !socket || !user) return;
+    if (challenge.status === 'active' && !opponentNotifiedRef.current) {
+      opponentNotifiedRef.current = true;
+      const userId = String(user._id);
+      const challengerId = String(challenge.challengerId?._id || challenge.challengerId);
+      const isMeChallenger = challengerId === userId;
+      const opponentName = isMeChallenger
+        ? challenge.opponentId?.name
+        : challenge.challengerId?.name;
+      toast.success(`${opponentName} has entered the arena!`, {
+        icon: '⚔',
+        duration: 4000,
+      });
+    }
+  }, [challenge?.status]);
+
   const handleSubmit = async () => {
     if (!submissionUrl.trim()) return toast.error('Please provide your LeetCode submission URL');
     if (!submissionUrl.trim().includes('leetcode.com')) return toast.error('Please enter a valid LeetCode URL');
     setSubmitting(true);
     try {
-      const res = await api.post(`/challenges/${id}/submit`, { leetcodeSubmissionUrl: submissionUrl.trim() });
+      const res = await api.post(`/challenges/${id}/submit`, {
+        leetcodeSubmissionUrl: submissionUrl.trim(),
+        solutionCode: solutionCode.trim() || undefined,
+      });
       setChallenge(res.data.data);
       toast.success('Solution submitted!');
       setShowSubmit(false);
       setSubmissionUrl('');
+      setSolutionCode('');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit');
     } finally { setSubmitting(false); }
@@ -332,13 +356,76 @@ export default function ChallengeArena() {
         <div className="lg:col-span-2 space-y-5">
           {/* Result banner */}
           {isCompleted && (
-            <div className={`card-marble p-8 text-center ${
-              iWon ? 'border-gold-500/20' : isDraw ? 'border-amber-500/15' : 'border-crimson-500/15'
-            }`}>
-              <div className="text-5xl mb-4 font-serif">{iWon ? '✦' : isDraw ? '—' : '✧'}</div>
-              <h2 className="text-2xl font-serif font-bold text-stone-100 tracking-wider">{getResultTitle()}</h2>
-              <p className="text-stone-400 mt-2 font-medium">{getResultDetail()}</p>
-            </div>
+            <>
+              <div className={`card-marble p-8 text-center ${
+                iWon ? 'border-gold-500/20' : isDraw ? 'border-amber-500/15' : 'border-crimson-500/15'
+              }`}>
+                <div className="text-5xl mb-4 font-serif">{iWon ? '✦' : isDraw ? '—' : '✧'}</div>
+                <h2 className="text-2xl font-serif font-bold text-stone-100 tracking-wider">{getResultTitle()}</h2>
+                <p className="text-stone-400 mt-2 font-medium">{getResultDetail()}</p>
+              </div>
+
+              {/* ── Solution Comparison (both submitted) ── */}
+              {(challengerSub?.solutionCode || opponentSub?.solutionCode) && (
+                <div className="card-stone p-5 border-gold-500/10">
+                  <h4 className="font-serif font-bold text-gold-400 tracking-wide mb-3 text-sm">
+                    Solution Comparison — Review Each Other's Code
+                  </h4>
+                  <p className="text-stone-500 text-xs mb-4 font-medium">
+                    Verify your opponent's solution. Open their LeetCode URL to confirm the submission status.
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {/* Challenger's solution */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-bold text-stone-500 tracking-wide uppercase">
+                          {challenge.challengerId?.name}'s Solution
+                        </span>
+                        {challengerSub?.leetcodeSubmissionUrl && (
+                          <a href={challengerSub.leetcodeSubmissionUrl} target="_blank" rel="noopener noreferrer"
+                            className="text-[10px] text-gold-400 hover:text-gold-300 font-bold transition-colors">
+                            View Submission ↗
+                          </a>
+                        )}
+                      </div>
+                      {challengerSub?.solutionCode ? (
+                        <pre className="bg-stone-900 border border-stone-700/50 rounded-sm p-3 text-xs font-mono text-stone-300 overflow-auto max-h-64 whitespace-pre-wrap">
+                          {challengerSub.solutionCode}
+                        </pre>
+                      ) : (
+                        <p className="text-stone-600 text-xs italic py-4 text-center border border-stone-700/30 rounded-sm">
+                          No code submitted
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Opponent's solution */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-bold text-stone-500 tracking-wide uppercase">
+                          {challenge.opponentId?.name}'s Solution
+                        </span>
+                        {opponentSub?.leetcodeSubmissionUrl && (
+                          <a href={opponentSub.leetcodeSubmissionUrl} target="_blank" rel="noopener noreferrer"
+                            className="text-[10px] text-gold-400 hover:text-gold-300 font-bold transition-colors">
+                            View Submission ↗
+                          </a>
+                        )}
+                      </div>
+                      {opponentSub?.solutionCode ? (
+                        <pre className="bg-stone-900 border border-stone-700/50 rounded-sm p-3 text-xs font-mono text-stone-300 overflow-auto max-h-64 whitespace-pre-wrap">
+                          {opponentSub.solutionCode}
+                        </pre>
+                      ) : (
+                        <p className="text-stone-600 text-xs italic py-4 text-center border border-stone-700/30 rounded-sm">
+                          No code submitted
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Problem */}
@@ -431,15 +518,28 @@ export default function ChallengeArena() {
 
             <h3 className="font-serif font-bold text-lg text-stone-100 tracking-wide mb-1">Submit Your Solution</h3>
             <p className="text-stone-400 text-sm font-medium mb-5">
-              Paste your LeetCode submission URL after solving.
+              Paste your LeetCode submission URL and solution code after solving.
               {theySubmitted && <span className="text-amber-400 font-bold block mt-1">Opponent already submitted — hurry!</span>}
             </p>
 
-            <div className="mb-5">
+            <div className="mb-4">
               <label className="label">LeetCode Submission URL</label>
               <input type="url" className="input text-sm" placeholder="https://leetcode.com/submissions/detail/..."
                 value={submissionUrl} onChange={e => setSubmissionUrl(e.target.value)} autoFocus />
               <p className="text-[10px] text-stone-500 mt-1.5 font-medium">Must be a valid LeetCode URL (leetcode.com/submissions/...)</p>
+            </div>
+
+            <div className="mb-5">
+              <label className="label">Your Solution Code <span className="text-stone-600 font-normal">(optional — shared after battle for verification)</span></label>
+              <textarea
+                className="input text-sm font-mono"
+                rows={6}
+                placeholder="Paste your solution code here..."
+                value={solutionCode}
+                onChange={e => setSolutionCode(e.target.value)}
+                style={{ resize: 'vertical' }}
+              />
+              <p className="text-[10px] text-stone-500 mt-1.5 font-medium">Both opponents can review each other's code after the battle ends</p>
             </div>
 
             <div className="flex gap-3">

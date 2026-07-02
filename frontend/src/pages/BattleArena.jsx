@@ -126,9 +126,9 @@ export default function BattleArena() {
         <div className="relative">
           <div className="absolute inset-0 rounded bg-gold-500/6 blur-xl animate-glow-pulse" />
           <button id="battle-start" onClick={handleBattle} disabled={loading}
-            className="btn-primary text-xl px-16 py-5 shadow-glow-gold relative z-10 tracking-[0.15em] uppercase font-bold">
+            className="btn-primary px-12 py-3 text-sm shadow-glow-gold relative z-10 tracking-[0.12em] uppercase font-bold">
             {loading ? (
-              <><span className="w-5 h-5 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin" />Fetching...</>
+              <><span className="w-4 h-4 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin" />Fetching...</>
             ) : (
               'FIGHT'
             )}
